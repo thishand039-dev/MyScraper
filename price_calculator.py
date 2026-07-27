@@ -10,7 +10,7 @@ raw Excel price).
 INPUT FILES (all expected in the same directory as this script, i.e. next
 to the scraper script that imports it):
 
-    inputSample.json       - fixed constants (rates & fees), e.g.:
+    inputSample.json     - fixed constants (rates & fees), e.g.:
         {
           "jpyRate": 2.1126,
           "velTax": 15000,
@@ -21,45 +21,51 @@ to the scraper script that imports it):
           "serviceChargers": "200000"
         }
 
-    vehicleWebValues.json  - manually maintained "web value" (x) per
-        vehicle, keyed by "<maker_model> <grade_trim>", e.g.:
-        { "SUZUKI WAGON R Hybrid ZX": 1700000 }
-
-    vehicleM3Values.json   - manually maintained M3/volume value per
-        vehicle, same key format, e.g.:
-        { "SUZUKI WAGON R Hybrid ZX": 8.55 }
+    vehicleDetails.json  - manually maintained reference config, one entry
+        per exact vehicle model name as it appears in the site's model
+        dropdown (this is also what goes in the Excel 'vehicle_model'
+        column, so the two match exactly), e.g.:
+        {
+          "SUZUKI WAGON R ZX Hybrid": {
+            "webValue": 1736900,
+            "fuelType": "hybrid",
+            "engineCc": 660,
+            "m3Value": 8.26
+          }
+        }
+        This is the ONLY source of fuelType/engineCc/webValue/m3Value used
+        for the tax calculation - scraped site fields are NOT used here,
+        since different auction sites/pages can label the same vehicle
+        differently.
 
 PER-VEHICLE INPUT (read from the vehicle's own output folder):
-    vehicleDetails.json     - written by the scraper (price, fuel_type,
-                               engine_cc, maker_model, grade_trim, etc.)
+    vehicle_info.json    - written by the scraper. Must contain at least
+                            "vehicle_model" (the exact Excel dropdown
+                            value) and "price" (the Excel unit price in
+                            JPY). May also carry scraped fields for
+                            reference/debugging only.
 
 OUTPUTS (written into the same vehicle folder):
-    price_breakdown.txt      - full JPY->LKR cost breakdown, values shown
-                                to 2 decimal places.
-    description.txt          - price line updated (via the caller passing
-                                us the same row_data dict used to build
-                                the original description, plus our own
-                                write_description_file-compatible call).
+    price_breakdown.txt   - full JPY->LKR cost breakdown, values shown to
+                             2 decimal places.
+    description.txt       - price line updated in place.
 
 STOP-ON-ISSUE BEHAVIOUR:
-    If any required reference value is missing, or a value falls outside
-    every defined bracket (M3 out of range, unsupported fuel/CC
-    combination, unit price with no undervalue-amount bracket, etc.),
-    calculation stops at that point. Whatever was already computed is
-    still written to price_breakdown.txt, followed by a clear message
-    describing what stopped it. This function never raises/crashes the
-    caller's loop - it always returns a (success: bool, breakdown_text)
-    tuple.
+    If the vehicle_model isn't found in vehicleDetails.json, or any
+    computed value falls outside every defined bracket (M3 out of range,
+    unsupported fuel/CC combination, unit price with no undervalue-amount
+    bracket, etc.), calculation stops at that point. Whatever was already
+    computed is still written to price_breakdown.txt, followed by a clear
+    message describing what stopped it. This function never
+    raises/crashes the caller's loop - it always returns a bool.
 """
 
 import json
-import re
 from pathlib import Path
 
 CONFIG_DIR = Path(__file__).resolve().parent
 INPUT_VALUES_FILE = CONFIG_DIR / "inputSample.json"
-WEB_VALUES_FILE = CONFIG_DIR / "vehicleWebValues.json"
-M3_VALUES_FILE = CONFIG_DIR / "vehicleM3Values.json"
+VEHICLE_DETAILS_CONFIG_FILE = CONFIG_DIR / "vehicleDetails.json"
 
 
 class CalculationStopped(Exception):
@@ -74,13 +80,10 @@ def _load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def _lookup_key(vehicle_details: dict) -> str:
-    """Matches entries in vehicleWebValues.json / vehicleM3Values.json,
-    which are keyed by '<maker_model> <grade_trim>' e.g.
-    'SUZUKI WAGON R Hybrid ZX'."""
-    maker_model = str(vehicle_details.get("maker_model", "")).strip()
-    grade_trim = str(vehicle_details.get("grade_trim", "")).strip()
-    return f"{maker_model} {grade_trim}".strip()
+def _stopped_with(partial: dict, message: str) -> CalculationStopped:
+    exc = CalculationStopped(message)
+    exc.partial = dict(partial)
+    return exc
 
 
 # ---------------------------------------------------------------------
@@ -182,22 +185,30 @@ def xid_amount(fuel_type: str, engine_cc: int) -> float:
 # Main calculation
 # ---------------------------------------------------------------------
 
-def calculate(vehicle_details: dict) -> dict:
-    """Runs the full formula. Returns a dict of every intermediate value
-    plus 'total_vehicle_cost'. Raises CalculationStopped part-way through
-    if a required reference value is missing/out of range - the caller
-    (process_vehicle_folder) catches this and writes whatever is in
-    `partial` so far, so keep this dict updated at every step."""
+def calculate(vehicle_model: str, price: float) -> dict:
+    """Runs the full formula for `vehicle_model` (must exactly match a key
+    in vehicleDetails.json) at unit price `price` (JPY). Returns a dict of
+    every intermediate value plus 'total_vehicle_cost'. Raises
+    CalculationStopped part-way through if a required reference value is
+    missing/out of range - the caller (process_vehicle_folder) catches
+    this and writes whatever is in `partial` so far, so keep this dict
+    updated at every step."""
 
     partial = {}
 
     inputs = _load_json(INPUT_VALUES_FILE)
-    web_values = _load_json(WEB_VALUES_FILE)
-    m3_values = _load_json(M3_VALUES_FILE)
+    details_config = _load_json(VEHICLE_DETAILS_CONFIG_FILE)
 
-    key = _lookup_key(vehicle_details)
+    if vehicle_model not in details_config:
+        raise _stopped_with(
+            partial,
+            f"Vehicle model '{vehicle_model}' not found in "
+            f"vehicleDetails.json. Check the exact dropdown spelling, or "
+            f"add this model to the config. Calculation stopped."
+        )
+    cfg = details_config[vehicle_model]
 
-    b1 = float(vehicle_details.get("price", 0) or 0)
+    b1 = float(price or 0)
     b2 = 0.0  # Auction House Fee - defaulted to 0 until a per-auction-house
               # json is added later.
     partial["B1_unit_price"] = b1
@@ -209,13 +220,13 @@ def calculate(vehicle_details: dict) -> dict:
     b4 = 30_000.0
     partial["B4_inspection"] = b4
 
-    if key not in m3_values:
+    if "m3Value" not in cfg:
         raise _stopped_with(
             partial,
-            f"Vehicle M3 value not found for '{key}' in vehicleM3Values.json. "
+            f"'m3Value' missing for '{vehicle_model}' in vehicleDetails.json. "
             f"Calculation stopped."
         )
-    b5 = float(m3_values[key])
+    b5 = float(cfg["m3Value"])
     partial["B5_m3"] = b5
 
     b6 = (b1 + b2 + b3) * b5 * 0.001 * 1.05
@@ -237,15 +248,18 @@ def calculate(vehicle_details: dict) -> dict:
     partial["B9_undervalue_amount"] = b9
 
     b10 = b8 - b9
+    print("b8 =", b8)
+    print("b9 =", b9)
+    print("b10 =", b10)
     partial["B10_proforma_invoice_cif"] = b10
 
-    if key not in web_values:
+    if "webValue" not in cfg:
         raise _stopped_with(
             partial,
-            f"Vehicle web value not found for '{key}' in "
-            f"vehicleWebValues.json. Calculation stopped."
+            f"'webValue' missing for '{vehicle_model}' in vehicleDetails.json. "
+            f"Calculation stopped."
         )
-    web_value = float(web_values[key])
+    web_value = float(cfg["webValue"])
     y = web_value * (100 / 110) * (85 / 100)
     partial["web_value_x"] = web_value
     partial["Y_web_value_adjusted"] = y
@@ -261,15 +275,14 @@ def calculate(vehicle_details: dict) -> dict:
     partial["CIF"] = cif
     partial["CID"] = cid
 
-    fuel_type = vehicle_details.get("fuel_type", "")
-    engine_cc_raw = vehicle_details.get("engine_cc", "")
+    fuel_type = cfg.get("fuelType", "")
     try:
-        engine_cc = int(re.sub(r"[^\d]", "", str(engine_cc_raw)))
-    except ValueError:
+        engine_cc = int(cfg.get("engineCc", 0))
+    except (TypeError, ValueError):
         raise _stopped_with(
             partial,
-            f"Could not parse engine CC from '{engine_cc_raw}'. "
-            f"Calculation stopped."
+            f"'engineCc' for '{vehicle_model}' in vehicleDetails.json is not "
+            f"a valid number. Calculation stopped."
         )
 
     try:
@@ -311,12 +324,6 @@ def calculate(vehicle_details: dict) -> dict:
     return partial
 
 
-def _stopped_with(partial: dict, message: str) -> CalculationStopped:
-    exc = CalculationStopped(message)
-    exc.partial = dict(partial)
-    return exc
-
-
 # ---------------------------------------------------------------------
 # Formatting helpers
 # ---------------------------------------------------------------------
@@ -335,11 +342,11 @@ def round_to_lakhs(value_lkr: float) -> str:
     return s if s else "0"
 
 
-def format_breakdown(vehicle_details: dict, result: dict, stopped_message: str = None) -> str:
-    key = _lookup_key(vehicle_details)
+def format_breakdown(vehicle_model: str, vehicle_code: str, result: dict,
+                      stopped_message: str = None) -> str:
     lines = []
-    lines.append(f"Price Breakdown - {key}")
-    lines.append(f"Vehicle Code: {vehicle_details.get('vehicle_code', '')}")
+    lines.append(f"Price Breakdown - {vehicle_model}")
+    lines.append(f"Vehicle Code: {vehicle_code}")
     lines.append("=" * 60)
 
     if "CID" in result:
@@ -381,8 +388,8 @@ def format_breakdown(vehicle_details: dict, result: dict, stopped_message: str =
 
 def update_description_price(description_path: Path, new_price_line: str):
     """Replaces the first line of description.txt (the
-    '<maker_model> <grade_trim> <year> - <price>' line) with the same
-    text but the calculated price, leaving all other lines untouched."""
+    '<vehicle_model> <year> - <price>' line) with the same text but the
+    calculated price, leaving all other lines untouched."""
     if not description_path.exists():
         return
     text = description_path.read_text(encoding="utf-8")
@@ -403,21 +410,26 @@ def update_description_price(description_path: Path, new_price_line: str):
 # ---------------------------------------------------------------------
 
 def process_vehicle_folder(folder: Path) -> bool:
-    """Reads <folder>/vehicleDetails.json, runs the calculation, writes
-    <folder>/price_breakdown.txt, and updates <folder>/description.txt's
-    price line. Returns True on a full successful calculation, False if
-    it stopped early (details are in price_breakdown.txt either way)."""
-    details_path = folder / "vehicleDetails.json"
-    if not details_path.exists():
-        print(f"    ! price_calculator: vehicleDetails.json not found in {folder}")
+    """Reads <folder>/vehicle_info.json (must contain 'vehicle_model' and
+    'price'), runs the calculation, writes <folder>/price_breakdown.txt,
+    and updates <folder>/description.txt's price line. Returns True on a
+    full successful calculation, False if it stopped early (details are
+    in price_breakdown.txt either way)."""
+    info_path = folder / "vehicle_info.json"
+    if not info_path.exists():
+        print(f"    ! price_calculator: vehicle_info.json not found in {folder}")
         return False
 
-    with open(details_path, "r", encoding="utf-8") as f:
-        vehicle_details = json.load(f)
+    with open(info_path, "r", encoding="utf-8") as f:
+        vehicle_info = json.load(f)
+
+    vehicle_model = vehicle_info.get("vehicle_model", "")
+    vehicle_code = vehicle_info.get("vehicle_code", "")
+    price = vehicle_info.get("price", 0)
 
     try:
-        result = calculate(vehicle_details)
-        breakdown_text = format_breakdown(vehicle_details, result)
+        result = calculate(vehicle_model, price)
+        breakdown_text = format_breakdown(vehicle_model, vehicle_code, result)
         (folder / "price_breakdown.txt").write_text(breakdown_text, encoding="utf-8")
 
         price_label = f"LKR {round_to_lakhs(result['total_vehicle_cost'])} Lakhs"
@@ -429,7 +441,7 @@ def process_vehicle_folder(folder: Path) -> bool:
 
     except CalculationStopped as e:
         partial = getattr(e, "partial", {})
-        breakdown_text = format_breakdown(vehicle_details, partial, stopped_message=str(e))
+        breakdown_text = format_breakdown(vehicle_model, vehicle_code, partial, stopped_message=str(e))
         (folder / "price_breakdown.txt").write_text(breakdown_text, encoding="utf-8")
 
         update_description_price(

@@ -1,0 +1,26 @@
+{
+  "SUZUKI WAGON R ZX Hybrid": {
+    "webValue": 1736900,
+    "fuelType": "hybrid",
+    "engineCc": 660,
+    "m3Value": 8.26
+  },
+  "SUZUKI WAGON R ZL Petrol": {
+    "webValue": 1457500,
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 8.26
+  },
+  "SUZUKI WAGON R FX Petrol": {
+    "webValue": 850000,
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 8.26
+  },
+  "DAIHATSU MIRA L": {
+    "webValue": 1025200,
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 7.51
+  }
+}

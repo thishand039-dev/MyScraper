@@ -272,15 +272,15 @@ def download_auction_sheet(page: Page, sheet_url: str, folder: Path):
 
 
 def write_description_file(folder: Path, row_data: dict):
-    """Write description.txt. The 'Grade' spec-card field (e.g.
-    'Hybrid ZX') is used as the trim descriptor after the maker/model
-    name, matching the desired 'SUZUKI WAGON R Hybrid ZX' style.
+    """Write description.txt. Uses the exact Excel 'vehicle_model' value
+    as the title, since that's the authoritative name matched against
+    vehicleDetails.json for the tax calculation.
 
     NOTE: the price written here is the raw Excel price. It gets
     overwritten with the calculated LKR price by
     price_calculator.process_vehicle_folder(), called later in the loop."""
     description = (
-        f"{row_data['maker_model']} {row_data['grade_trim']} {row_data['year']} - {row_data['price']}\n"
+        f"{row_data['vehicle_model']} {row_data['year']} - {row_data['price']}\n"
         f"Auction Date: {row_data['auction_date']}\n"
         f"Color: {row_data['color']}\n"
         f"Mileage: {row_data['mileage']}\n"
@@ -292,29 +292,35 @@ def write_description_file(folder: Path, row_data: dict):
     (folder / "description.txt").write_text(description, encoding="utf-8")
 
 
-def write_market_price_file(folder: Path, row_data: dict):
-    """Write a JSON reference file for feeding into the price calculator.
-    fuel_type, engine, chassis, and price come first (price explicitly as
-    the 4th key), followed by the rest of the vehicle's details."""
+def write_vehicle_info_file(folder: Path, row_data: dict):
+    """Write vehicle_info.json - the per-vehicle file price_calculator.py
+    reads. 'vehicle_model' and 'price' are the authoritative fields used
+    for the tax calculation lookup (matched exactly against the global
+    vehicleDetails.json reference config). Everything under
+    scraped_maker_model/scraped_grade/scraped_fuel_type/scraped_engine_cc
+    is kept only for reference/debugging - it is NOT used in the
+    calculation, since the site's own labeling can differ from the exact
+    dropdown name."""
     data = {
-        "fuel_type": row_data["fuel_type"],
-        "engine": row_data["engine_cc"],
-        "chassis": row_data["chassis"],
+        "vehicle_model": row_data["vehicle_model"],
         "price": row_data["price"],
-        "maker_model": row_data["maker_model"],
-        "grade_trim": row_data["grade_trim"],
+        "vehicle_code": row_data["vehicle_code"],
+        "vehicle_url": row_data["vehicle_url"],
         "year": row_data["year"],
+        "auction_date": row_data["auction_date"],
         "auction_grade": row_data["auction_grade"],
         "mileage": row_data["mileage"],
         "color": row_data["color"],
         "transmission": row_data["transmission"],
         "steering": row_data["steering"],
+        "chassis": row_data["chassis"],
         "equipment": row_data["equipment"],
-        "auction_date": row_data["auction_date"],
-        "vehicle_code": row_data["vehicle_code"],
-        "vehicle_url": row_data["vehicle_url"],
+        "scraped_maker_model": row_data["scraped_maker_model"],
+        "scraped_grade": row_data["scraped_grade"],
+        "scraped_fuel_type": row_data["scraped_fuel_type"],
+        "scraped_engine_cc": row_data["scraped_engine_cc"],
     }
-    with open(folder / "vehicleDetails.json", "w", encoding="utf-8") as f:
+    with open(folder / "vehicle_info.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
@@ -326,8 +332,9 @@ def safe_folder_name(vehicle_code: str, maker_model: str) -> str:
 def run():
     df = pd.read_excel(INPUT_EXCEL)
     df.columns = [c.strip().lower() for c in df.columns]
-    assert "vehicle_url" in df.columns and "price" in df.columns, \
-        "Excel must have 'vehicle_url' and 'price' columns"
+    assert "vehicle_url" in df.columns and "vehicle_model" in df.columns \
+        and "price" in df.columns, \
+        "Excel must have 'vehicle_url', 'vehicle_model', and 'price' columns"
 
     results = []
 
@@ -346,17 +353,25 @@ def run():
 
         for _, row in df.iterrows():
             vehicle_url = str(row["vehicle_url"]).strip()
+            vehicle_model = str(row["vehicle_model"]).strip()
             price = clean_price(str(row["price"]).strip())
             vehicle_code = extract_vehicle_code(vehicle_url)
 
-            print(f"Opening {vehicle_url} ...")
+            print(f"Opening {vehicle_url} ({vehicle_model}) ...")
             detail_page = context.new_page()
             detail_page.goto(vehicle_url)
             detail_page.wait_for_load_state("networkidle")
             human_delay(1.0, 2.0)
 
-            maker_model = extract_maker_model(detail_page)
-            if not maker_model:
+            # maker_model as scraped from the page is kept only as a
+            # reference/sanity-check field (see write_vehicle_info_file
+            # below) - it is NOT used for the tax calculation lookup,
+            # since the site's own naming can differ from the exact
+            # dropdown name in vehicle_model. If the page didn't render
+            # at all (e.g. bad URL/login), scraped_maker_model will be
+            # empty and we skip this row.
+            scraped_maker_model = extract_maker_model(detail_page)
+            if not scraped_maker_model:
                 print("  [FAILED] could not find vehicle name on page - "
                       "check login / URL validity")
                 detail_page.close()
@@ -366,18 +381,17 @@ def run():
             auction_date = extract_auction_date(detail_page)
             detail_fields = extract_detail_fields(detail_page)
 
-            folder_path = OUTPUT_DIR / safe_folder_name(vehicle_code, maker_model)
+            # Folder + description now use the exact Excel vehicle_model
+            # (matches the tax-calc lookup key), not the scraped title.
+            folder_path = OUTPUT_DIR / safe_folder_name(vehicle_code, vehicle_model)
 
             row_data = {
-                "maker_model": maker_model,
-                "grade_trim": detail_fields.get("Grade", ""),
+                "vehicle_model": vehicle_model,
                 "year": detail_fields.get("Registration Year", ""),
                 "auction_date": auction_date,
                 "color": detail_fields.get("Color", ""),
                 "mileage": detail_fields.get("Mileage", ""),
                 "auction_grade": detail_fields.get("Auction Grade", ""),
-                "engine_cc": re.sub(r"[^\d]", "", detail_fields.get("Engine CC", "")),
-                "fuel_type": detail_fields.get("Fuel Type", ""),
                 "transmission": detail_fields.get("Transmission", ""),
                 "steering": detail_fields.get("Steering Wheel", ""),
                 "chassis": detail_fields.get("Chassis", ""),
@@ -385,6 +399,12 @@ def run():
                 "vehicle_code": vehicle_code,
                 "vehicle_url": vehicle_url,
                 "price": price,
+                # Reference-only fields as scraped from the site - not
+                # used for the tax calculation:
+                "scraped_maker_model": scraped_maker_model,
+                "scraped_grade": detail_fields.get("Grade", ""),
+                "scraped_fuel_type": detail_fields.get("Fuel Type", ""),
+                "scraped_engine_cc": re.sub(r"[^\d]", "", detail_fields.get("Engine CC", "")),
             }
 
             image_urls = extract_images(detail_page)
@@ -399,20 +419,22 @@ def run():
             detail_page.close()
 
             write_description_file(folder_path, row_data)
-            write_market_price_file(folder_path, row_data)
+            write_vehicle_info_file(folder_path, row_data)
 
             # --- Price calculation step ---
             # Runs the JPY->LKR import-cost formula against the
-            # vehicleDetails.json we just wrote, writes price_breakdown.txt,
-            # and overwrites description.txt's price line with the
-            # calculated value. If a reference value is missing or out of
-            # range, this stops itself and flags it in price_breakdown.txt
-            # (and in description.txt) rather than guessing - it never
-            # raises, so the scraper loop always continues to the next lot.
+            # vehicle_info.json we just wrote (matched against the global
+            # vehicleDetails.json config by the exact Excel vehicle_model
+            # name), writes price_breakdown.txt, and overwrites
+            # description.txt's price line with the calculated value. If a
+            # reference value is missing or out of range, this stops
+            # itself and flags it in price_breakdown.txt (and in
+            # description.txt) rather than guessing - it never raises, so
+            # the scraper loop always continues to the next lot.
             price_calc_ok = price_calculator.process_vehicle_folder(folder_path)
 
             sheet_note = "+ auction sheet" if sheet_url else "(no auction sheet)"
-            print(f"  [OK] {maker_model} {row_data['grade_trim']} ({row_data['year']}) "
+            print(f"  [OK] {vehicle_model} ({row_data['year']}) "
                   f"- {len(image_urls)} image(s) {sheet_note} + description.txt -> {folder_path}")
             results.append({
                 **row,
