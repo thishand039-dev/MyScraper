@@ -88,42 +88,46 @@ def _stopped_with(partial: dict, message: str) -> CalculationStopped:
 
 # ---------------------------------------------------------------------
 # Bracket tables (JPY unless noted). Clean cutoffs: [low, next_low).
+# Named "calculate_..." (rather than e.g. "agent_fee") so they don't
+# shadow the descriptive result variables of the same concept used in
+# calculate() below (agent_fee, freight, etc.).
 # ---------------------------------------------------------------------
 
-def agent_fee(b1: float) -> float:
-    """B3"""
-    if b1 < 1_000_000:
+def calculate_agent_fee(unit_price: float) -> float:
+    """Agent Fee, based on unit price."""
+    if unit_price < 1_000_000:
         return 140_000.0
-    elif b1 < 2_000_000:
+    elif unit_price < 2_000_000:
         return 150_000.0
-    elif b1 < 3_000_000:
+    elif unit_price < 3_000_000:
         return 160_000.0
-    elif b1 < 4_000_000:
+    elif unit_price < 4_000_000:
         return 280_000.0
     else:
-        return b1 * 0.10
+        return unit_price * 0.10
 
 
-def undervalue_amount(b1: float) -> float:
-    """B9. No bracket is defined for unit price >= 4,000,000 - stop."""
-    if b1 < 1_000_000:
+def calculate_under_value_amount(unit_price: float) -> float:
+    """Under Value Amount, based on unit price. No bracket is defined for
+    unit price >= 4,000,000 - stop."""
+    if unit_price < 1_000_000:
         return 120_000.0
-    elif b1 < 2_000_000:
+    elif unit_price < 2_000_000:
         return 130_000.0
-    elif b1 < 3_000_000:
+    elif unit_price < 3_000_000:
         return 140_000.0
-    elif b1 < 4_000_000:
+    elif unit_price < 4_000_000:
         return 240_000.0
     else:
         raise CalculationStopped(
-            "Undervalue Amount (B9): unit price is 4,000,000 JPY or higher, "
+            "Under Value Amount: unit price is 4,000,000 JPY or higher, "
             "which has no defined bracket. Calculation stopped - needs "
             "manual review."
         )
 
 
-def freight_fee(b5_m3: float) -> float:
-    """B7. Table only covers 0 - 16.00 M3."""
+def calculate_freight(vehicle_m3_value: float) -> float:
+    """Freight, based on Vehicle M3 Value. Table only covers 0 - 16.00 M3."""
     brackets = [
         (0.0, 10.00, 110_000.0),
         (10.01, 11.00, 120_000.0),
@@ -134,15 +138,15 @@ def freight_fee(b5_m3: float) -> float:
         (15.01, 16.00, 190_000.0),
     ]
     for low, high, fee in brackets:
-        if low <= b5_m3 <= high:
+        if low <= vehicle_m3_value <= high:
             return fee
     raise CalculationStopped(
-        f"Freight (B7): M3 value {b5_m3} is not in the supported range "
-        f"(0 - 16.00 M3). Calculation stopped."
+        f"Freight: Vehicle M3 Value {vehicle_m3_value} is not in the "
+        f"supported range (0 - 16.00 M3). Calculation stopped."
     )
 
 
-def xid_amount(fuel_type: str, engine_cc: int) -> float:
+def calculate_xid(fuel_type: str, engine_cc: int) -> float:
     """XID. 660cc or less is a fixed value regardless of fuel type.
     ASSUMPTION: table boundaries overlap at 1000/1300/1500cc (e.g. Petrol
     lists both '0-1000' and '1000-1299'); brackets are checked in order
@@ -208,17 +212,17 @@ def calculate(vehicle_model: str, price: float) -> dict:
         )
     cfg = details_config[vehicle_model]
 
-    b1 = float(price or 0)
-    b2 = 0.0  # Auction House Fee - defaulted to 0 until a per-auction-house
-              # json is added later.
-    partial["B1_unit_price"] = b1
-    partial["B2_auction_house_fee"] = b2
+    unit_price = float(price or 0)
+    auction_house_fee = 0.0  # defaulted to 0 until a per-auction-house
+                              # json is added later.
+    partial["unit_price"] = unit_price
+    partial["auction_house_fee"] = auction_house_fee
 
-    b3 = agent_fee(b1)
-    partial["B3_agent_fee"] = b3
+    agent_fee = calculate_agent_fee(unit_price)
+    partial["agent_fee"] = agent_fee
 
-    b4 = 30_000.0
-    partial["B4_inspection"] = b4
+    inspection = 30_000.0
+    partial["inspection"] = inspection
 
     if "m3Value" not in cfg:
         raise _stopped_with(
@@ -226,32 +230,29 @@ def calculate(vehicle_model: str, price: float) -> dict:
             f"'m3Value' missing for '{vehicle_model}' in vehicleDetails.json. "
             f"Calculation stopped."
         )
-    b5 = float(cfg["m3Value"])
-    partial["B5_m3"] = b5
+    vehicle_m3_value = float(cfg["m3Value"])
+    partial["vehicle_m3_value"] = vehicle_m3_value
 
-    b6 = (b1 + b2 + b3) * b5 * 0.001 * 1.05
-    partial["B6_insurance"] = b6
-
-    try:
-        b7 = freight_fee(b5)
-    except CalculationStopped as e:
-        raise _stopped_with(partial, str(e))
-    partial["B7_freight"] = b7
-
-    b8 = b1 + b2 + b3 + b4 + b6 + b7
-    partial["B8_full_lc_cif"] = b8
+    insurance = (unit_price + auction_house_fee + agent_fee) * vehicle_m3_value * 0.001 * 1.05
+    partial["insurance"] = insurance
 
     try:
-        b9 = undervalue_amount(b1)
+        freight = calculate_freight(vehicle_m3_value)
     except CalculationStopped as e:
         raise _stopped_with(partial, str(e))
-    partial["B9_undervalue_amount"] = b9
+    partial["freight"] = freight
 
-    b10 = b8 - b9
-    print("b8 =", b8)
-    print("b9 =", b9)
-    print("b10 =", b10)
-    partial["B10_proforma_invoice_cif"] = b10
+    full_lc_cif = unit_price + auction_house_fee + agent_fee + inspection + insurance + freight
+    partial["full_lc_cif"] = full_lc_cif
+
+    try:
+        under_value_amount = calculate_under_value_amount(unit_price)
+    except CalculationStopped as e:
+        raise _stopped_with(partial, str(e))
+    partial["under_value_amount"] = under_value_amount
+
+    preforma_invoice_cif = full_lc_cif - under_value_amount
+    partial["preforma_invoice_cif"] = preforma_invoice_cif
 
     if "webValue" not in cfg:
         raise _stopped_with(
@@ -260,11 +261,11 @@ def calculate(vehicle_model: str, price: float) -> dict:
             f"Calculation stopped."
         )
     web_value = float(cfg["webValue"])
-    y = web_value * (100 / 110) * (85 / 100)
-    partial["web_value_x"] = web_value
-    partial["Y_web_value_adjusted"] = y
+    web_value_adjusted = web_value * (100 / 110) * (85 / 100)
+    partial["web_value"] = web_value
+    partial["web_value_adjusted"] = web_value_adjusted
 
-    tax_base = max(y, b10)
+    tax_base = max(web_value_adjusted, preforma_invoice_cif)
     partial["tax_base"] = tax_base
 
     jpy_rate = float(inputs["jpyRate"])
@@ -286,24 +287,24 @@ def calculate(vehicle_model: str, price: float) -> dict:
         )
 
     try:
-        xid = xid_amount(fuel_type, engine_cc)
+        xid = calculate_xid(fuel_type, engine_cc)
     except CalculationStopped as e:
         raise _stopped_with(partial, str(e))
     partial["XID"] = xid
 
-    sscl = (cif * 1.10 + cid + xid) * 0.025
+    sscl_tax = (cif * 1.10 + cid + xid) * 0.025
     vat = (cif * 1.10 + cid + xid) * 0.18
     vel = float(inputs["velTax"])
-    partial["SSCL_TAX"] = sscl
+    partial["SSCL_TAX"] = sscl_tax
     partial["VAT"] = vat
     partial["VEL"] = vel
 
-    total_tax = cid + xid + sscl + vat + vel
+    total_tax = cid + xid + sscl_tax + vat + vel
     partial["total_tax"] = total_tax
 
-    b33 = b9 * jpy_rate * 1.10
-    vehicle_value = b10 * jpy_rate + b33
-    partial["B33_undervalue_and_charges"] = b33
+    under_value_and_charges = under_value_amount * jpy_rate * 1.10
+    vehicle_value = preforma_invoice_cif * jpy_rate + under_value_and_charges
+    partial["under_value_and_charges"] = under_value_and_charges
     partial["vehicle_value"] = vehicle_value
 
     bank_port_clearing = (
