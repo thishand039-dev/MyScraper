@@ -14,7 +14,7 @@ dropdown value mismatches.
 
 After scraping each vehicle, this script also runs the local price
 calculator (price_calculator.py) against the freshly-written
-vehicleDetails.json, which writes price_breakdown.txt and updates
+vehicle_info.json, which writes price_breakdown.txt and updates
 description.txt with the calculated LKR price (replacing the Excel price).
 
 SETUP:
@@ -24,11 +24,10 @@ SETUP:
 .env keys needed:
     AUTOFROMAUCTION_USERNAME=your_username
     AUTOFROMAUCTION_PASSWORD=your_password
-    CURRENCY_RATE_LKR=your_rate_here
     WHATSAPP_GROUP_LINK=https://chat.whatsapp.com/your_invite_code
 
 Reference files needed alongside this script (see price_calculator.py):
-    inputSample.json, vehicleWebValues.json, vehicleM3Values.json
+    inputSample.json, vehicleDetails.json
 
 STATUS: NOT yet run against the live site - test carefully. Known
 uncertain points are marked with "ASSUMPTION" comments below.
@@ -57,7 +56,6 @@ load_dotenv()
 
 USERNAME = os.getenv("AUTOFROMAUCTION_USERNAME")
 PASSWORD = os.getenv("AUTOFROMAUCTION_PASSWORD")
-CURRENCY_RATE_LKR = os.getenv("CURRENCY_RATE_LKR")
 WHATSAPP_GROUP_LINK = os.getenv("WHATSAPP_GROUP_LINK")
 
 _missing = [name for name, val in [
@@ -70,6 +68,23 @@ if _missing:
         f"Make sure .env is in the same folder as this script and has "
         f"these keys set."
     )
+
+
+def _load_jpy_rate() -> str:
+    """Reads jpyRate from inputSample.json - the same reference file
+    price_calculator.py uses for the tax calculation - so the 'Currency
+    Rate' line in description.txt always matches the rate actually used,
+    with no separate .env value to keep in sync."""
+    try:
+        with open(Path(__file__).resolve().parent / "inputSample.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return str(data.get("jpyRate", ""))
+    except Exception as e:
+        print(f"    ! could not read jpyRate from inputSample.json: {e}")
+        return ""
+
+
+CURRENCY_RATE_LKR = _load_jpy_rate()
 
 BASE_URL = "https://www.autofromauction.com"
 LOGIN_URL = f"{BASE_URL}/"
