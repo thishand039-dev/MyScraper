@@ -12,7 +12,7 @@
     "m3Value": 8.26
   },
   "SUZUKI WAGON R FX Petrol": {
-    "webValue": 850000,
+    "webValue": 1179000, 
     "fuelType": "petrol",
     "engineCc": 660,
     "m3Value": 8.26
@@ -22,5 +22,181 @@
     "fuelType": "petrol",
     "engineCc": 660,
     "m3Value": 7.51
+  },
+  "DAIHATSU MIRA X": {
+    "webValue": 1179200,
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 7.51
+  },
+  "DAIHATSU MIRA G": {
+    "webValue": 1320000,
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 7.51
+  },
+    "Toyota Yaris X 1000 Petrol": {
+    "webValue": 1697300,
+    "fuelType": "petrol",
+    "engineCc": 1000,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris G 1000 Petrol": {
+    "webValue": 1921700,
+    "fuelType": "petrol",
+    "engineCc": 1000,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris X 1500 Petrol": {
+    "webValue": 1848000,
+    "fuelType": "petrol",
+    "engineCc": 1500,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris X 1500 Hybrid": {
+    "webValue": 2249500,
+    "fuelType": "petrol",
+    "engineCc": 1500,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris G 1500 Petrol": {
+    "webValue": 2072400,
+    "fuelType": "petrol",
+    "engineCc": 15000,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris Z 1500 Hybrid": {
+    "webValue": 2669700,
+    "fuelType": "Hybrid",
+    "engineCc": 15000,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris Z 1500 Petrol": {
+    "webValue": 2301200,
+    "fuelType": "petrol",
+    "engineCc": 15000,
+    "m3Value": 9.946
+  },
+    "Toyota Yaris X 1500 E4": {
+    "webValue": 2473900,
+    "fuelType": "E4",
+    "engineCc": 15000,
+    "m3Value": 9.946
+  },
+    "NISSAN DAYZ X Petrol": {
+    "webValue": 1500400,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
+    "NISSAN DAYZ Highway Star X Hybrid": {
+    "webValue": 1745700,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
+    "TOYOTA ROOMY X Petrol": {
+    "webValue": 1742400,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "TOYOTA ROOMY G Petrol": {
+    "webValue": 1939300,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "TOYOTA ROOMY GT Petrol": {
+    "webValue": 2065800,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "TOYOTA ROOMY Custom G Petrol": {
+    "webValue": 2118600,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "TOYOTA ROOMY Custom GT Petrol": {
+    "webValue": 2257200,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "Daihatsu Thor X Petrol": {
+    "webValue": 1742400,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },    
+    "Daihatsu Thor G Petrol": {
+    "webValue": 1939300,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },    
+  "Daihatsu Thor GT Petrol": {
+    "webValue": 2065800,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "Daihatsu Thor Custom G Petrol": {
+    "webValue": 2118600,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "Daihatsu Thor Custom GT Petrol": {
+    "webValue": 2257200,
+    "fuelType": "Petrol",
+    "engineCc": 1000,
+    "m3Value": 10.720
+  },
+    "Mitsubishi EK wagon M Petrol": {
+    "webValue": 1468500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.262
+  },
+    "Mitsubishi EK wagon G Petrol": {
+    "webValue": 1551000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.262
+  },
+  "Daihatsu Move RS Petrol": {
+    "webValue": 1947000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.28
+  },
+  "Daihatsu Move G Petrol": {
+    "webValue": 1765500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.28
+  },
+  "Daihatsu Move X Petrol": {
+    "webValue": 1501500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.28
+  },
+  "Daihatsu Move L Petrol": {
+    "webValue": 1369500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.28
+  },
+  "Daihatsu Move L Petrol": {
+    "webValue": 1369500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.28
   }
+  
+
 }
