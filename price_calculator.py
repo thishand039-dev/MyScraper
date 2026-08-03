@@ -350,6 +350,29 @@ def format_breakdown(vehicle_model: str, vehicle_code: str, result: dict,
     lines.append(f"Vehicle Code: {vehicle_code}")
     lines.append("=" * 60)
 
+    if "unit_price" in result:
+        lines.append(f"Unit Price:                   {_money(result['unit_price'])}")
+    if "auction_house_fee" in result:
+        lines.append(f"Auction House Fee / Extra:    {_money(result['auction_house_fee'])}")
+    if "agent_fee" in result:
+        lines.append(f"Agent Fee:                    {_money(result['agent_fee'])}")
+    if "inspection" in result:
+        lines.append(f"Inspection:                   {_money(result['inspection'])}")
+    if "vehicle_m3_value" in result:
+        lines.append(f"Vehicle M3 Value:             {result['vehicle_m3_value']}")
+    if "insurance" in result:
+        lines.append(f"Insurance:                    {_money(result['insurance'])}")
+    if "freight" in result:
+        lines.append(f"Freight:                      {_money(result['freight'])}")
+    if "full_lc_cif" in result:
+        lines.append(f"FULL LC CIF:                  {_money(result['full_lc_cif'])}")
+    if "under_value_amount" in result:
+        lines.append(f"Undervalue Amount:            {_money(result['under_value_amount'])}")
+    if "preforma_invoice_cif" in result:
+        lines.append(f"Preforma Invoice CIF (UV):    {_money(result['preforma_invoice_cif'])}")
+    lines.append("(All of the above are in JPY)")
+    lines.append("=" * 60)
+
     if "CID" in result:
         lines.append(f"CID:                          {_money(result['CID'])}")
     if "XID" in result:
