@@ -221,4 +221,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 #files
-MyScraper/auth_state_autofromauction.json
+auth_state_autofromauction.json
