@@ -10,6 +10,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+downloads/
 build/
 develop-eggs/
 dist/
@@ -218,3 +219,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#files
+MyScraper/auth_state_autofromauction.json

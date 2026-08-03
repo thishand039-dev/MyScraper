@@ -95,6 +95,12 @@
     "engineCc": 660,
     "m3Value": 8.260
   },
+    "NISSAN DAYZ Highway Star X Pro Pilot Hybrid": {
+    "webValue": 1834800,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
     "TOYOTA ROOMY X Petrol": {
     "webValue": 1742400,
     "fuelType": "Petrol",
@@ -190,6 +196,36 @@
     "fuelType": "Petrol",
     "engineCc": 660,
     "m3Value": 8.28
+  },
+    "Suzuki Spacia G HYBRID": {
+    "webValue": 1530100,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 9.938
+  },
+    "Suzuki Spacia X HYBRID": {
+    "webValue": 1705000,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 9.938
+  },
+    "Suzuki Spacia Custom GS HYBRID": {
+    "webValue": 1801800,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 9.938
+  },
+    "Suzuki Spacia Custom XS HYBRID": {
+    "webValue": 1995400,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 9.938
+  },
+    "Suzuki Spacia Custom XS Turbo HYBRID": {
+    "webValue": 2073500,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 9.938
   }
   
 
