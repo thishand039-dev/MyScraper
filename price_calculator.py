@@ -36,7 +36,9 @@ to the scraper script that imports it):
         This is the ONLY source of fuelType/engineCc/webValue/m3Value used
         for the tax calculation - scraped site fields are NOT used here,
         since different auction sites/pages can label the same vehicle
-        differently.
+        differently. fuelType also drives Luxury Tax (LXT): only
+        "petrol" and "hybrid" have a defined threshold/rate - anything
+        else stops the calculation.
 
 PER-VEHICLE INPUT (read from the vehicle's own output folder):
     vehicle_info.json    - written by the scraper. Must contain at least
@@ -185,6 +187,30 @@ def calculate_xid(fuel_type: str, engine_cc: int) -> float:
     )
 
 
+def calculate_luxury_tax(fuel_type: str, vehicle_cif_lkr: float) -> float:
+    """Luxury Tax = (Vehicle CIF in LKR - threshold) * rate, only on the
+    excess above the fuel-type's tax-free threshold. Only Petrol and
+    Hybrid have a defined threshold/rate - anything else needs manual
+    review (this is checked independently of XID's fuel-type check,
+    since XID skips that check entirely for engines <= 660cc)."""
+    fuel = (fuel_type or "").strip().lower()
+
+    if fuel == "petrol":
+        threshold = 5_000_000.0
+        rate = 1.00
+    elif fuel == "hybrid":
+        threshold = 5_500_000.0
+        rate = 0.80
+    else:
+        raise CalculationStopped(
+            f"Luxury Tax: unsupported fuel type '{fuel_type}' - needs "
+            f"manual review. Calculation stopped."
+        )
+
+    excess = vehicle_cif_lkr - threshold
+    return max(0.0, excess * rate)
+
+
 # ---------------------------------------------------------------------
 # Main calculation
 # ---------------------------------------------------------------------
@@ -292,6 +318,12 @@ def calculate(vehicle_model: str, price: float) -> dict:
         raise _stopped_with(partial, str(e))
     partial["XID"] = xid
 
+    try:
+        lxt = calculate_luxury_tax(fuel_type, cif)
+    except CalculationStopped as e:
+        raise _stopped_with(partial, str(e))
+    partial["LXT"] = lxt
+
     sscl_tax = (cif * 1.10 + cid + xid) * 0.025
     vat = (cif * 1.10 + cid + xid) * 0.18
     vel = float(inputs["velTax"])
@@ -299,7 +331,7 @@ def calculate(vehicle_model: str, price: float) -> dict:
     partial["VAT"] = vat
     partial["VEL"] = vel
 
-    total_tax = cid + xid + sscl_tax + vat + vel
+    total_tax = cid + xid + sscl_tax + vat + vel + lxt
     partial["total_tax"] = total_tax
 
     under_value_and_charges = under_value_amount * jpy_rate * 1.10
@@ -383,7 +415,10 @@ def format_breakdown(vehicle_model: str, vehicle_code: str, result: dict,
         lines.append(f"VAT (18%):                    {_money(result['VAT'])}")
     if "VEL" in result:
         lines.append(f"VEL:                          {_money(result['VEL'])}")
-    lines.append("LXT:                          Not included (see note below)")
+    if "LXT" in result:
+        lines.append(f"LXT:                          {_money(result['LXT'])}")
+    else:
+        lines.append("LXT:                          Not calculated (see stop reason below, if any)")
     if "total_tax" in result:
         lines.append(f"Total Tax:                    {_money(result['total_tax'])}")
     if "vehicle_value" in result:
@@ -398,7 +433,8 @@ def format_breakdown(vehicle_model: str, vehicle_code: str, result: dict,
         lines.append(f"Total Vehicle Cost:           {_money(result['total_vehicle_cost'])}")
 
     lines.append("=" * 60)
-    lines.append("Note: Luxury Tax (LXT) is not included in this calculation.")
+    if "LXT" in result:
+        lines.append("Note: Luxury Tax (LXT) is included in Total Tax above.")
 
     if stopped_message:
         lines.append("")

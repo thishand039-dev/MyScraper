@@ -17,19 +17,19 @@
     "engineCc": 660,
     "m3Value": 8.26
   },
-  "DAIHATSU MIRA L": {
+  "DAIHATSU MIRA L Petrol": {
     "webValue": 1025200,
     "fuelType": "petrol",
     "engineCc": 660,
     "m3Value": 7.51
   },
-  "DAIHATSU MIRA X": {
+  "DAIHATSU MIRA X Petrol": {
     "webValue": 1179200,
     "fuelType": "petrol",
     "engineCc": 660,
     "m3Value": 7.51
   },
-  "DAIHATSU MIRA G": {
+  "DAIHATSU MIRA G Petrol": {
     "webValue": 1320000,
     "fuelType": "petrol",
     "engineCc": 660,
@@ -226,7 +226,96 @@
     "fuelType": "Hybrid",
     "engineCc": 660,
     "m3Value": 9.938
+  },
+    "Honda Vezel HEV Z HYBRID": {
+    "webValue": 3268100,
+    "fuelType": "Hybrid",
+    "engineCc": 1496,
+    "m3Value": 12.352
+  },
+    "Honda Vezel HEV Z Play HYBRID": {
+    "webValue": 3699300,
+    "fuelType": "Hybrid",
+    "engineCc": 1496,
+    "m3Value": 12.352
+  },
+    "Honda Vezel HEV RS HYBRID": {
+    "webValue": 3748800,
+    "fuelType": "Hybrid",
+    "engineCc": 1496,
+    "m3Value": 12.352
+  },
+    "Honda Vezel HEV X HYBRID": {
+    "webValue": 2998600,
+    "fuelType": "Hybrid",
+    "engineCc": 1496,
+    "m3Value": 12.352
+  },
+    "Suzuki Alto X HYBRID": {
+    "webValue": 1519100,
+    "fuelType": "Hybrid",
+    "engineCc": 658,
+    "m3Value": 7.63
+  },
+    "Suzuki Alto S HYBRID": {
+    "webValue": 1350800,
+    "fuelType": "Hybrid",
+    "engineCc": 658,
+    "m3Value": 7.63
+  },
+    "Suzuki Alto L Upgrade Petrol": {
+    "webValue": 1379400,
+    "fuelType": "Petrol",
+    "engineCc": 658,
+    "m3Value": 7.63
+  },
+    "Suzuki Alto L Petrol": {
+    "webValue": 1179900,
+    "fuelType": "Petrol",
+    "engineCc": 658,
+    "m3Value": 7.63
+  },
+    "Suzuki Alto A Petrol": {
+    "webValue": 1142900,
+    "fuelType": "Petrol",
+    "engineCc": 658,
+    "m3Value": 7.63
+  },   
+    "Daihatsu Taft G Turbo Rugged Venture Petrol": {
+    "webValue": 1787500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },   
+    "Daihatsu Taft G Turbo Active Mode Petrol": {
+    "webValue": 1804000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },
+    "Daihatsu Taft G Turbo Petrol": {
+    "webValue": 1705000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },    
+    "Daihatsu Taft G Rugged Venture Petrol": {
+    "webValue": 1705000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },    
+    "Daihatsu Taft G Active Mode Petrol": {
+    "webValue": 1721500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },    
+    "Daihatsu Taft G Petrol": {
+    "webValue": 1622500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
   }
-  
 
 }
