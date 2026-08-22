@@ -50,37 +50,37 @@
     "Toyota Yaris X 1500 Petrol": {
     "webValue": 1848000,
     "fuelType": "petrol",
-    "engineCc": 1500,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "Toyota Yaris X 1500 Hybrid": {
     "webValue": 2249500,
     "fuelType": "petrol",
-    "engineCc": 1500,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "Toyota Yaris G 1500 Petrol": {
     "webValue": 2072400,
     "fuelType": "petrol",
-    "engineCc": 15000,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "Toyota Yaris Z 1500 Hybrid": {
     "webValue": 2669700,
     "fuelType": "Hybrid",
-    "engineCc": 15000,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "Toyota Yaris Z 1500 Petrol": {
     "webValue": 2301200,
     "fuelType": "petrol",
-    "engineCc": 15000,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "Toyota Yaris X 1500 E4": {
     "webValue": 2473900,
     "fuelType": "E4",
-    "engineCc": 15000,
+    "engineCc": 1496,
     "m3Value": 9.946
   },
     "NISSAN DAYZ X Petrol": {
@@ -97,6 +97,24 @@
   },
     "NISSAN DAYZ Highway Star X Pro Pilot Hybrid": {
     "webValue": 1834800,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
+    "NISSAN DAYZ Highway Star G Turbo Hybrid": {
+    "webValue": 1888700,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
+    "NISSAN DAYZ Highway Star G Turbo ProPilot Hybrid": {
+    "webValue": 1964600,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.260
+  },
+    "NISSAN DAYZ Highway Star G Turbo Urban Chrome ProPilot Hybrid": {
+    "webValue": 2041400,
     "fuelType": "Hybrid",
     "engineCc": 660,
     "m3Value": 8.260

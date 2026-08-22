@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lot Collage Maker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --asphalt: #17191c;
+    --asphalt-2: #1f2226;
+    --panel: #24272c;
+    --line: #34383e;
+    --paper: #eceae4;
+    --amber: #ff9a1f;
+    --amber-dim: #7a5424;
+    --ok: #5fbf7a;
+    --danger: #e0654f;
+    --text: #eceae4;
+    --text-dim: #9a9d a2;
+    --text-dim2: #969a9f;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #23272d 0%, transparent 60%),
+      var(--asphalt);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--paper);
+  }
+  .brand span{color:var(--amber);}
+  .tag{
+    font-size:11px;
+    color:var(--text-dim2);
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .panel-label{
+    font-family:'Oswald', sans-serif;
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .panel-label::before{
+    content:"";
+    width:8px;height:8px;
+    background:var(--amber);
+    display:inline-block;
+  }
+
+  #dropzone{
+    border:2px dashed #454a52;
+    border-radius:6px;
+    padding:36px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  #dropzone:hover, #dropzone.drag{
+    border-color:var(--amber);
+    background:rgba(255,154,31,0.05);
+  }
+  #dropzone .big{
+    font-family:'Oswald', sans-serif;
+    font-size:16px;
+    color:var(--paper);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:6px;
+  }
+  #dropzone .small{
+    font-size:12px;
+    color:var(--text-dim2);
+  }
+  input[type=file]{display:none;}
+
+  .thumbs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+  .thumb{
+    position:relative;
+    width:96px;
+    background:var(--asphalt-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    cursor:grab;
+  }
+  .thumb.dragging{opacity:0.35;}
+  .thumb img{
+    width:100%;
+    height:72px;
+    object-fit:cover;
+    display:block;
+  }
+  .thumb .num{
+    position:absolute;
+    top:4px;left:4px;
+    background:var(--amber);
+    color:#1a1a1a;
+    font-weight:700;
+    font-size:11px;
+    padding:1px 6px;
+    border-radius:3px;
+  }
+  .thumb .rm{
+    position:absolute;
+    top:4px;right:4px;
+    background:rgba(20,20,20,0.75);
+    color:#fff;
+    border:none;
+    width:18px;height:18px;
+    border-radius:3px;
+    font-size:12px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .thumb .rm:hover{background:var(--danger);}
+  .thumb .lbl{
+    font-size:10px;
+    color:var(--text-dim2);
+    text-align:center;
+    padding:5px 4px 6px;
+    letter-spacing:0.5px;
+  }
+
+  .layout-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  .layout-opt{
+    border:1px solid var(--line);
+    background:var(--asphalt-2);
+    border-radius:5px;
+    padding:8px 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim2);
+    cursor:pointer;
+    letter-spacing:0.5px;
+  }
+  .layout-opt.active{
+    border-color:var(--amber);
+    color:var(--amber);
+    background:rgba(255,154,31,0.08);
+  }
+
+  .row-controls{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-top:16px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .field label{
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--text-dim2);
+  }
+  select, input[type=range]{
+    background:var(--asphalt-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:7px 10px;
+    border-radius:4px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+  }
+
+  #canvasWrap{
+    background:repeating-conic-gradient(#1c1e22 0% 25%, #202226 0% 50%) 50% / 20px 20px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:220px;
+  }
+  #outCanvas{
+    max-width:100%;
+    height:auto;
+    border-radius:3px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.5);
+  }
+  #placeholder{
+    color:var(--text-dim2);
+    font-size:12px;
+    text-align:center;
+    padding:40px 0;
+  }
+
+  .actions{
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  button.primary{
+    background:var(--amber);
+    color:#1a1409;
+    border:none;
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:12px 22px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  button.primary:hover{background:#ffab45;}
+  button.primary:disabled{
+    background:#5a5346;
+    color:#8a8578;
+    cursor:not-allowed;
+  }
+  button.ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-dim2);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:11px 18px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  button.ghost:hover{border-color:var(--text-dim2); color:var(--text);}
+
+  .hint{
+    font-size:11px;
+    color:var(--text-dim2);
+    margin-top:10px;
+    line-height:1.6;
+  }
+  .hint b{color:var(--amber-dim);color:var(--amber);}
+
+  @media (max-width:600px){
+    .brand{font-size:20px;}
+    .thumb{width:80px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">LOT <span>COLLAGE</span></div>
+      <div class="tag">one vehicle · one image · every angle</div>
+    </div>
+    <div class="tag" id="countTag">0 photos loaded</div>
+  </header>
+
+  <div class="panel" id="fileProtocolWarning" style="display:none; border-color:var(--danger); background:rgba(224,101,79,0.08);">
+    <div class="panel-label" style="color:var(--danger);">⚠ Running from a local file</div>
+    <div class="hint" style="color:var(--text);">
+      This page was opened by double-clicking it (<code id="currentProtocolUrl"></code>), which Chrome treats as an untrusted origin —
+      folder drag-and-drop and auto-save will fail with a cryptic error in this mode.
+      <br><br>
+      Either use this tool directly inside Claude (no download needed), or serve this file over
+      <b>http://localhost</b> instead of opening it directly — e.g. run
+      <code>python -m http.server 8000</code> in this folder, then open
+      <code>http://localhost:8000/</code> + the filename in Chrome.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">01 — Add Photos</div>
+
+    <button class="ghost" id="folderBtn" style="width:100%;padding:14px;font-size:13px;margin-bottom:10px;display:none;">
+      📁 Open Vehicle Folder (loads photos + auto-saves collage here)
+    </button>
+    <div id="folderActive" style="display:none;" class="hint">
+      Using folder: <b id="folderName"></b> — the collage will save straight back into this folder.
+      <span id="folderClear" style="text-decoration:underline;cursor:pointer;color:var(--amber);margin-left:6px;">Change folder</span>
+    </div>
+
+    <div id="dropzone">
+      <div class="big">Drag the vehicle's folder here — or tap to choose photos</div>
+      <div class="small">Drop the whole folder to auto-load its photos and auto-save the collage back into it. Dropping individual photos works too, but then you'll download the collage normally.</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,.jfif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.avif,.heic,.heif,.tif,.tiff" multiple>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="hint" id="fallbackHint">Drag thumbnails to reorder — first photo gets the largest spot in the collage.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">02 — Layout & Output</div>
+    <div class="layout-row" id="layoutRow"></div>
+
+    <div class="row-controls">
+      <div class="field">
+        <label>Output shape</label>
+        <select id="shapeSelect">
+          <option value="square">Square (1080×1080) — best for WhatsApp</option>
+          <option value="portrait">Portrait (1080×1350)</option>
+          <option value="landscape">Landscape (1280×960)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Gap width</label>
+        <select id="gapSelect">
+          <option value="6">Thin</option>
+          <option value="14" selected>Normal</option>
+          <option value="24">Thick</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Frame color</label>
+        <select id="colorSelect">
+          <option value="#111214">Black</option>
+          <option value="#eceae4" selected>White</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">03 — Preview</div>
+    <div id="canvasWrap">
+      <div id="placeholder">Your collage will appear here</div>
+      <canvas id="outCanvas" style="display:none;"></canvas>
+    </div>
+    <div class="actions">
+      <button class="primary" id="downloadBtn" disabled>Save Collage</button>
+      <button class="ghost" id="resetBtn">Clear All</button>
+    </div>
+    <div class="hint" id="saveHint">Downloads as a single JPG, ready to attach straight into your WhatsApp group.</div>
+  </div>
+
+</div>
+
+<script>
+const state = {
+  images: [], // {id, src, img(HTMLImageElement)}
+  layout: 'auto',
+  lastCount: 0,
+  dirHandle: null,
+};
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const thumbsEl = document.getElementById('thumbs');
+const layoutRow = document.getElementById('layoutRow');
+const canvas = document.getElementById('outCanvas');
+const ctx = canvas.getContext('2d');
+const placeholder = document.getElementById('placeholder');
+const downloadBtn = document.getElementById('downloadBtn');
+const resetBtn = document.getElementById('resetBtn');
+const countTag = document.getElementById('countTag');
+const shapeSelect = document.getElementById('shapeSelect');
+const gapSelect = document.getElementById('gapSelect');
+const colorSelect = document.getElementById('colorSelect');
+const folderBtn = document.getElementById('folderBtn');
+const folderActive = document.getElementById('folderActive');
+const folderName = document.getElementById('folderName');
+const folderClear = document.getElementById('folderClear');
+const saveHint = document.getElementById('saveHint');
+
+const FS_ACCESS_SUPPORTED = ('showDirectoryPicker' in window);
+if(FS_ACCESS_SUPPORTED){
+  folderBtn.style.display = 'block';
+}
+
+if(location.protocol === 'file:'){
+  const warn = document.getElementById('fileProtocolWarning');
+  document.getElementById('currentProtocolUrl').textContent = location.href;
+  warn.style.display = 'block';
+}
+
+let dragSrcIdx = null;
+
+const IMG_EXT = /\.(jpe?g|jfif|pjpeg|pjp|png|webp|gif|bmp|avif|heic|heif|tiff?)$/i;
+
+function readAllEntries(dirReader){
+  return new Promise((resolve, reject) => {
+    let all = [];
+    (function readBatch(){
+      dirReader.readEntries(entries => {
+        if(entries.length === 0){ resolve(all); return; }
+        all = all.concat(entries);
+        readBatch();
+      }, reject);
+    })();
+  });
+}
+
+async function filesFromDirectoryEntry(dirEntry){
+  const reader = dirEntry.createReader();
+  const entries = await readAllEntries(reader);
+  const fileEntries = entries.filter(e => e.isFile && IMG_EXT.test(e.name));
+  fileEntries.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}));
+  const files = [];
+  for(const fe of fileEntries){
+    const file = await new Promise((res, rej) => fe.file(res, rej));
+    files.push(file);
+  }
+  return files;
+}
+
+async function loadFolderHandle(handle){
+  state.dirHandle = handle;
+  clearAllImages();
+  state.lastCount = 0;
+  thumbsEl.innerHTML = '';
+  layoutRow.innerHTML = '';
+
+  const entries = [];
+  for await (const [name, entry] of handle.entries()){
+    if(entry.kind === 'file' && IMG_EXT.test(name)) entries.push({name, entry});
+  }
+  entries.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}));
+
+  for(const {entry} of entries){
+    const file = await entry.getFile();
+    await loadImageFile(file);
+  }
+
+  folderName.textContent = handle.name;
+  folderActive.style.display = 'block';
+  saveHint.innerHTML = 'This will save the collage as <b>collage.jpg</b> directly inside <b>' + handle.name + '</b> — no manual moving needed.';
+}
+
+folderBtn.addEventListener('click', async () => {
+  try{
+    const handle = await window.showDirectoryPicker();
+    await loadFolderHandle(handle);
+  } catch(err){
+    if(err.name !== 'AbortError'){
+      console.error(err);
+      alert('Could not open that folder: ' + err.message);
+    }
+  }
+});
+
+folderClear.addEventListener('click', () => {
+  state.dirHandle = null;
+  folderActive.style.display = 'none';
+  saveHint.textContent = 'Downloads as a single JPG, ready to attach straight into your WhatsApp group.';
+});
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', async e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+
+  const items = e.dataTransfer.items;
+  const firstItem = items && items.length ? items[0] : null;
+  const entry = (firstItem && firstItem.webkitGetAsEntry) ? firstItem.webkitGetAsEntry() : null;
+
+  // A single dropped folder: read its contents with the reliable legacy API.
+  if(entry && entry.isDirectory && items.length === 1){
+    // Request write access to the folder IMMEDIATELY, before any other
+    // await runs — Chrome invalidates the dropped item shortly after the
+    // drop event finishes, so this call can't be delayed until later.
+    let writeHandlePromise = null;
+    if('getAsFileSystemHandle' in firstItem){
+      writeHandlePromise = firstItem.getAsFileSystemHandle().catch(err => {
+        console.warn('Auto-save to folder unavailable in this environment:', err);
+        return null;
+      });
+    }
+
+    let files;
+    try{
+      files = await filesFromDirectoryEntry(entry);
+    } catch(err){
+      console.error(err);
+      alert('Could not read that folder: ' + err.message);
+      return;
+    }
+    if(files.length === 0){
+      alert('No photo files (jpg/png/webp) were found directly inside "' + entry.name + '". Other files in there — like a description or price sheet — are skipped automatically, only images load.');
+      return;
+    }
+
+    clearAllImages();
+    state.lastCount = 0;
+    state.dirHandle = null;
+    thumbsEl.innerHTML = '';
+    layoutRow.innerHTML = '';
+    for(const file of files) await loadImageFile(file);
+
+    let writeHandle = writeHandlePromise ? await writeHandlePromise : null;
+    if(writeHandle && writeHandle.kind !== 'directory') writeHandle = null;
+
+    if(writeHandle){
+      state.dirHandle = writeHandle;
+      folderName.textContent = entry.name;
+      folderActive.style.display = 'block';
+      saveHint.innerHTML = 'This will save the collage as <b>collage.jpg</b> directly inside <b>' + entry.name + '</b> — no manual moving needed.';
+    } else {
+      folderActive.style.display = 'none';
+      saveHint.innerHTML = 'Loaded photos from <b>' + entry.name + '</b>. This browser context can\'t write back into that folder automatically, so <b>Save Collage</b> will download the file normally — just move it into the folder afterward.';
+    }
+    return;
+  }
+
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+const objectUrls = new Set();
+
+function loadImageFile(file){
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    objectUrls.add(url);
+    const img = new Image();
+    img.onload = () => {
+      state.images.push({ id: Date.now() + Math.random(), img, objectUrl: url });
+      renderThumbs();
+      renderLayoutOptions();
+      render();
+      resolve();
+    };
+    img.onerror = () => {
+      console.error('Could not load image file:', file.name);
+      URL.revokeObjectURL(url);
+      objectUrls.delete(url);
+      resolve(); // don't let one bad file stop the rest of the batch
+    };
+    img.src = url;
+  });
+}
+
+function clearAllImages(){
+  state.images.forEach(item => {
+    if(item.objectUrl){ URL.revokeObjectURL(item.objectUrl); objectUrls.delete(item.objectUrl); }
+  });
+  state.images = [];
+}
+
+function handleFiles(fileList){
+  // Manual multi-select clears any active folder link (mixed sources shouldn't auto-save).
+  if(state.dirHandle){
+    state.dirHandle = null;
+    folderActive.style.display = 'none';
+    saveHint.textContent = 'Downloads as a single JPG, ready to attach straight into your WhatsApp group.';
+  }
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/') || IMG_EXT.test(f.name));
+  files.forEach(file => loadImageFile(file));
+  fileInput.value = '';
+}
+
+function renderThumbs(){
+  thumbsEl.innerHTML = '';
+  state.images.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    div.draggable = true;
+    div.dataset.idx = idx;
+
+    div.addEventListener('dragstart', e => { dragSrcIdx = idx; div.classList.add('dragging'); });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    div.addEventListener('dragover', e => e.preventDefault());
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetIdx = idx;
+      if(dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+      const moved = state.images.splice(dragSrcIdx, 1)[0];
+      state.images.splice(targetIdx, 0, moved);
+      dragSrcIdx = null;
+      renderThumbs();
+      render();
+    });
+
+    const img = document.createElement('img');
+    img.src = item.img.src;
+    const num = document.createElement('div');
+    num.className = 'num';
+    num.textContent = idx + 1;
+    const rm = document.createElement('button');
+    rm.className = 'rm';
+    rm.textContent = '✕';
+    rm.onclick = (ev) => {
+      ev.stopPropagation();
+      const removed = state.images.splice(idx, 1)[0];
+      if(removed && removed.objectUrl){ URL.revokeObjectURL(removed.objectUrl); objectUrls.delete(removed.objectUrl); }
+      renderThumbs();
+      renderLayoutOptions();
+      render();
+    };
+    const lbl = document.createElement('div');
+    lbl.className = 'lbl';
+    lbl.textContent = idx === 0 ? 'main shot' : 'photo ' + (idx+1);
+
+    div.appendChild(img);
+    div.appendChild(num);
+    div.appendChild(rm);
+    div.appendChild(lbl);
+    thumbsEl.appendChild(div);
+  });
+  countTag.textContent = state.images.length + ' photo' + (state.images.length===1?'':'s') + ' loaded';
+}
+
+// ---- Layout definitions ----
+// Each layout is a function(n, W, H, gap) -> array of {x,y,w,h} rects in canvas px, in image order
+function getAvailableLayouts(n){
+  const layouts = [];
+  if(n <= 1) return layouts;
+  if(n === 2){
+    layouts.push({key:'side', label:'Side by side'});
+    layouts.push({key:'stack', label:'Stacked'});
+  } else if(n === 3){
+    layouts.push({key:'heroLeft3', label:'Big + 2 stacked'});
+    layouts.push({key:'heroTop3', label:'Big top + 2 below'});
+    layouts.push({key:'even3', label:'3 even columns'});
+  } else if(n === 4){
+    layouts.push({key:'grid4', label:'2×2 grid'});
+    layouts.push({key:'heroLeft4', label:'Big + 3 stacked'});
+  } else if(n === 5){
+    layouts.push({key:'heroTop5', label:'Big top + 4 grid'});
+    layouts.push({key:'grid5', label:'2 top + 3 bottom'});
+  } else {
+    layouts.push({key:'grid6', label:'2×3 grid'});
+    layouts.push({key:'heroTop6', label:'Big top + 5 grid'});
+  }
+  return layouts;
+}
+
+function computeRects(key, n, W, H, gap){
+  const rects = [];
+  const g = gap;
+  if(key === 'side'){
+    const w = (W-3*g)/2;
+    rects.push({x:g,y:g,w,h:H-2*g});
+    rects.push({x:g*2+w,y:g,w,h:H-2*g});
+  } else if(key === 'stack'){
+    const h = (H-3*g)/2;
+    rects.push({x:g,y:g,w:W-2*g,h});
+    rects.push({x:g,y:g*2+h,w:W-2*g,h});
+  } else if(key === 'heroLeft3'){
+    const heroW = (W-3*g)*0.62;
+    const sideW = W-3*g-heroW;
+    const sideH = (H-3*g)/2;
+    rects.push({x:g,y:g,w:heroW,h:H-2*g});
+    rects.push({x:g*2+heroW,y:g,w:sideW,h:sideH});
+    rects.push({x:g*2+heroW,y:g*2+sideH,w:sideW,h:sideH});
+  } else if(key === 'heroTop3'){
+    const heroH = (H-3*g)*0.6;
+    const botH = H-3*g-heroH;
+    const botW = (W-3*g)/2;
+    rects.push({x:g,y:g,w:W-2*g,h:heroH});
+    rects.push({x:g,y:g*2+heroH,w:botW,h:botH});
+    rects.push({x:g*2+botW,y:g*2+heroH,w:botW,h:botH});
+  } else if(key === 'even3'){
+    const w = (W-4*g)/3;
+    for(let i=0;i<3;i++) rects.push({x:g+i*(w+g),y:g,w,h:H-2*g});
+  } else if(key === 'grid4'){
+    const w = (W-3*g)/2, h=(H-3*g)/2;
+    rects.push({x:g,y:g,w,h});
+    rects.push({x:g*2+w,y:g,w,h});
+    rects.push({x:g,y:g*2+h,w,h});
+    rects.push({x:g*2+w,y:g*2+h,w,h});
+  } else if(key === 'heroLeft4'){
+    const heroW = (W-3*g)*0.58;
+    const sideW = W-3*g-heroW;
+    const sideH = (H-4*g)/3;
+    rects.push({x:g,y:g,w:heroW,h:H-2*g});
+    for(let i=0;i<3;i++) rects.push({x:g*2+heroW,y:g+i*(sideH+g),w:sideW,h:sideH});
+  } else if(key === 'heroTop5'){
+    const heroH = (H-3*g)*0.55;
+    const botH = H-3*g-heroH;
+    const botW = (W-5*g)/4;
+    rects.push({x:g,y:g,w:W-2*g,h:heroH});
+    for(let i=0;i<4;i++) rects.push({x:g+i*(botW+g),y:g*2+heroH,w:botW,h:botH});
+  } else if(key === 'grid5'){
+    const topW = (W-3*g)/2, topH=(H-3*g)*0.5;
+    const botW = (W-4*g)/3, botH = H-3*g-topH;
+    rects.push({x:g,y:g,w:topW,h:topH});
+    rects.push({x:g*2+topW,y:g,w:topW,h:topH});
+    for(let i=0;i<3;i++) rects.push({x:g+i*(botW+g),y:g*2+topH,w:botW,h:botH});
+  } else if(key === 'grid6'){
+    const w=(W-4*g)/3, h=(H-3*g)/2;
+    for(let r=0;r<2;r++) for(let c=0;c<3;c++) rects.push({x:g+c*(w+g), y:g+r*(h+g), w, h});
+  } else if(key === 'heroTop6'){
+    const heroH=(H-3*g)*0.5, botH=H-3*g-heroH, botW=(W-6*g)/5;
+    rects.push({x:g,y:g,w:W-2*g,h:heroH});
+    for(let i=0;i<5;i++) rects.push({x:g+i*(botW+g),y:g*2+heroH,w:botW,h:botH});
+  }
+  return rects;
+}
+
+const COUNT_DEFAULTS = {
+  2: { layout: 'stack',   shape: 'portrait'  },
+  3: { layout: 'heroTop3', shape: 'portrait'  },
+  4: { layout: 'grid4',    shape: 'landscape' },
+};
+
+function renderLayoutOptions(){
+  const n = state.images.length;
+  layoutRow.innerHTML = '';
+  const opts = getAvailableLayouts(n);
+  if(opts.length === 0){ state.layout = null; state.lastCount = n; return; }
+
+  const countChanged = (n !== state.lastCount);
+  const def = COUNT_DEFAULTS[n];
+
+  if(countChanged && def){
+    state.layout = def.layout;
+    shapeSelect.value = def.shape;
+  } else if(!opts.find(o => o.key === state.layout)){
+    state.layout = opts[0].key;
+  }
+  state.lastCount = n;
+
+  opts.forEach(o => {
+    const btn = document.createElement('div');
+    btn.className = 'layout-opt' + (o.key === state.layout ? ' active' : '');
+    btn.textContent = o.label;
+    btn.onclick = () => { state.layout = o.key; renderLayoutOptions(); render(); };
+    layoutRow.appendChild(btn);
+  });
+}
+
+function getShapeDims(shape){
+  if(shape === 'portrait') return [1080,1350];
+  if(shape === 'landscape') return [1280,960];
+  return [1080,1080];
+}
+
+function drawContainImage(ctx, img, x, y, w, h, bg){
+  // Fit the WHOLE image inside the cell without cropping.
+  // Fill any leftover space with the frame color (letterbox/pillarbox).
+  ctx.fillStyle = bg;
+  ctx.fillRect(x, y, w, h);
+
+  const ir = img.width / img.height;
+  const r = w / h;
+  let dw, dh, dx, dy;
+  if(ir > r){
+    // image wider than cell -> fit to width
+    dw = w;
+    dh = w / ir;
+    dx = x;
+    dy = y + (h - dh)/2;
+  } else {
+    // image taller than cell -> fit to height
+    dh = h;
+    dw = h * ir;
+    dy = y;
+    dx = x + (w - dw)/2;
+  }
+  ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+}
+
+function render(){
+  const n = state.images.length;
+  if(n < 2){
+    canvas.style.display = 'none';
+    placeholder.style.display = 'block';
+    placeholder.textContent = n===0 ? 'Your collage will appear here' : 'Add at least 2 photos to build a collage';
+    downloadBtn.disabled = true;
+    return;
+  }
+  const [W,H] = getShapeDims(shapeSelect.value);
+  const gap = parseInt(gapSelect.value,10);
+  const bg = colorSelect.value;
+  canvas.width = W;
+  canvas.height = H;
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+
+  const rects = computeRects(state.layout, n, W, H, gap);
+  rects.forEach((r, i) => {
+    const item = state.images[i];
+    if(!item) return;
+    drawContainImage(ctx, item.img, r.x, r.y, r.w, r.h, bg);
+  });
+
+  canvas.style.display = 'block';
+  placeholder.style.display = 'none';
+  downloadBtn.disabled = false;
+}
+
+shapeSelect.addEventListener('change', render);
+gapSelect.addEventListener('change', render);
+colorSelect.addEventListener('change', render);
+
+downloadBtn.addEventListener('click', async () => {
+  downloadBtn.disabled = true;
+  const originalLabel = downloadBtn.textContent;
+
+  canvas.toBlob(async (blob) => {
+    if(state.dirHandle){
+      try{
+        const fileHandle = await state.dirHandle.getFileHandle('collage.jpg', { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        downloadBtn.textContent = '✓ Saved to folder';
+        setTimeout(() => { downloadBtn.textContent = originalLabel; downloadBtn.disabled = false; }, 1800);
+        return;
+      } catch(err){
+        console.error(err);
+        alert('Could not save directly into the folder (' + err.message + '). Downloading normally instead.');
+      }
+    }
+    // Fallback: normal browser download
+    const link = document.createElement('a');
+    link.download = 'vehicle-collage-' + Date.now() + '.jpg';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+    downloadBtn.disabled = false;
+  }, 'image/jpeg', 0.92);
+});
+
+resetBtn.addEventListener('click', () => {
+  clearAllImages();
+  state.lastCount = 0;
+  state.dirHandle = null;
+  folderActive.style.display = 'none';
+  saveHint.textContent = 'Downloads as a single JPG, ready to attach straight into your WhatsApp group.';
+  renderThumbs();
+  layoutRow.innerHTML = '';
+  render();
+});
+
+renderThumbs();
+</script>
+</body>
+</html>
