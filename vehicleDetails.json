@@ -47,42 +47,6 @@
     "engineCc": 1000,
     "m3Value": 9.946
   },
-    "Toyota Yaris X 1500 Petrol": {
-    "webValue": 1848000,
-    "fuelType": "petrol",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
-    "Toyota Yaris X 1500 Hybrid": {
-    "webValue": 2249500,
-    "fuelType": "petrol",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
-    "Toyota Yaris G 1500 Petrol": {
-    "webValue": 2072400,
-    "fuelType": "petrol",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
-    "Toyota Yaris Z 1500 Hybrid": {
-    "webValue": 2669700,
-    "fuelType": "Hybrid",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
-    "Toyota Yaris Z 1500 Petrol": {
-    "webValue": 2301200,
-    "fuelType": "petrol",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
-    "Toyota Yaris X 1500 E4": {
-    "webValue": 2473900,
-    "fuelType": "E4",
-    "engineCc": 1496,
-    "m3Value": 9.946
-  },
     "NISSAN DAYZ X Petrol": {
     "webValue": 1500400,
     "fuelType": "Petrol",
@@ -118,6 +82,42 @@
     "fuelType": "Hybrid",
     "engineCc": 660,
     "m3Value": 8.260
+  },    
+    "NISSAN Roox S Hybrid": {
+    "webValue": 1672000,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
+  },
+    "NISSAN Roox X Hybrid": {
+    "webValue": 1739100,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
+  },
+    "NISSAN Roox Highway Star X Hybrid": {
+    "webValue": 2033900,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
+  },
+    "NISSAN Roox Highway Star X ProPILOT Hybrid": {
+    "webValue": 2105400,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
+  },
+    "NISSAN Roox Highway Star G Turbo Hybrid": {
+    "webValue": 2159300,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
+  },
+    "Highway Star G Turbo ProPILOT Hybrid": {
+    "webValue": 2249500,
+    "fuelType": "Hybrid",
+    "engineCc": 660,
+    "m3Value": 8.87
   },
     "TOYOTA ROOMY X Petrol": {
     "webValue": 1742400,
@@ -331,6 +331,42 @@
   },    
     "Daihatsu Taft G Petrol": {
     "webValue": 1622500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },    
+    "Daihatsu Taft X Petrol": {
+    "webValue": 1435500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },   
+    "Daihatsu Taft X Turbo Petrol": {
+    "webValue": 1529000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },   
+    "Daihatsu Taft G Chrome Venture Petrol": {
+    "webValue": 1672000,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },   
+    "Daihatsu Taft G Chrome Venture Turbo Petrol": {
+    "webValue": 1754500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },
+    "Daihatsu Taft G Dark Chrome Venture Petrol": {
+    "webValue": 1677500,
+    "fuelType": "Petrol",
+    "engineCc": 660,
+    "m3Value": 8.162
+  },   
+    "Daihatsu Taft G Dark Chrome Venture Turbo Petrol": {
+    "webValue": 1760000,
     "fuelType": "Petrol",
     "engineCc": 660,
     "m3Value": 8.162

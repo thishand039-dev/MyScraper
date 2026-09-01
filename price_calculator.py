@@ -63,6 +63,7 @@ STOP-ON-ISSUE BEHAVIOUR:
 """
 
 import json
+import re
 from pathlib import Path
 
 CONFIG_DIR = Path(__file__).resolve().parent
@@ -447,9 +448,15 @@ def format_breakdown(vehicle_model: str, vehicle_code: str, result: dict,
 
 
 def update_description_price(description_path: Path, new_price_line: str):
-    """Replaces the first line of description.txt (the
-    '<vehicle_model> <year> - <price>' line) with the same text but the
-    calculated price, leaving all other lines untouched."""
+    """Replaces the price portion of description.txt's first line (the
+    '<vehicle_model> <year> | <price>' line) with `new_price_line`,
+    leaving everything else on that line - and every other line -
+    untouched.
+
+    Splits on ' | ' (falls back to the older ' - ' separator for
+    description.txt files written before this format changed, so
+    existing files don't break). Any trailing whitespace after the old
+    price is preserved after the new one."""
     if not description_path.exists():
         return
     text = description_path.read_text(encoding="utf-8")
@@ -457,11 +464,16 @@ def update_description_price(description_path: Path, new_price_line: str):
     if not lines:
         return
     first_line = lines[0]
-    if " - " in first_line:
-        prefix = first_line.rsplit(" - ", 1)[0]
-        lines[0] = f"{prefix} - {new_price_line}"
+
+    separator = " | " if " | " in first_line else (" - " if " - " in first_line else None)
+
+    if separator:
+        prefix, old_price_part = first_line.rsplit(separator, 1)
+        trailing_ws_match = re.search(r"(\s+)$", old_price_part)
+        trailing_ws = trailing_ws_match.group(1) if trailing_ws_match else ""
+        lines[0] = f"{prefix}{separator}{new_price_line}{trailing_ws}"
     else:
-        lines[0] = f"{first_line} - {new_price_line}"
+        lines[0] = f"{first_line} | {new_price_line}"
     description_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -492,7 +504,7 @@ def process_vehicle_folder(folder: Path) -> bool:
         breakdown_text = format_breakdown(vehicle_model, vehicle_code, result)
         (folder / "price_breakdown.txt").write_text(breakdown_text, encoding="utf-8")
 
-        price_label = f"LKR {round_to_lakhs(result['total_vehicle_cost'])} Lakhs"
+        price_label = f"*LKR {round_to_lakhs(result['total_vehicle_cost'])} Lakhs*"
         update_description_price(folder / "description.txt", price_label)
 
         print(f"    Price calculated: {price_label} "

@@ -1,0 +1,19 @@
+{
+  "vehicle_model": "SUZUKI WAGON R ZX Hybrid",
+  "price": "1430000",
+  "vehicle_code": "IEM0710193302509",
+  "vehicle_url": "https://www.autofromauction.com/vehicle-details/IEM0710193302509",
+  "year": "2026",
+  "auction_date": "2026-09-01 23:59",
+  "auction_grade": "S",
+  "mileage": "1,000km",
+  "color": "White",
+  "transmission": "Automatic",
+  "steering": "RHD",
+  "chassis": "MH95S",
+  "equipment": "AAC",
+  "scraped_maker_model": "SUZUKI WAGON R",
+  "scraped_grade": "Hybrid ZX",
+  "scraped_fuel_type": "GS",
+  "scraped_engine_cc": "660"
+}

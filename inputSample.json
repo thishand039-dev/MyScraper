@@ -1,9 +1,9 @@
 {
-  "jpyRate": 2.1204,
+  "jpyRate": 2.0867,
   "velTax": 15000,
   "bankingFees": 45000,
   "clearingFees": 35000,
   "portFees": 35000,
   "stampFees": 1750,
-  "serviceChargers": "150000"
+  "serviceChargers": "200000"
 }

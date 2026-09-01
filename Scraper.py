@@ -295,13 +295,13 @@ def write_description_file(folder: Path, row_data: dict):
     overwritten with the calculated LKR price by
     price_calculator.process_vehicle_folder(), called later in the loop."""
     description = (
-        f"{row_data['vehicle_model']} {row_data['year']} - {row_data['price']}\n"
+        f"{row_data['vehicle_model']} {row_data['year']} | *{row_data['price']}*\n\n"
         f"Auction Date: {row_data['auction_date']}\n"
         f"Color: {row_data['color']}\n"
         f"Mileage: {row_data['mileage']}\n"
         f"Auction Grade: {row_data['auction_grade']}\n"
         f"Currency Rate: {CURRENCY_RATE_LKR} LKR (Local customs rate)\n"
-        f"All taxes and import fees are fully covered\n"
+        f"Includes All Taxes & Import Fees\n\n"
         f"Follow this link to join our WhatsApp group: {WHATSAPP_GROUP_LINK}\n"
     )
     (folder / "description.txt").write_text(description, encoding="utf-8")

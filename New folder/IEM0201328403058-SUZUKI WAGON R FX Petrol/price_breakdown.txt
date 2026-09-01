@@ -1,0 +1,29 @@
+Price Breakdown - SUZUKI WAGON R FX Petrol
+Vehicle Code: IEM0201328403058
+============================================================
+Unit Price:                   1,050,000.00
+Auction House Fee / Extra:    0.00
+Agent Fee:                    150,000.00
+Inspection:                   30,000.00
+Vehicle M3 Value:             8.26
+Insurance:                    10,407.60
+Freight:                      110,000.00
+FULL LC CIF:                  1,350,407.60
+Undervalue Amount:            130,000.00
+Preforma Invoice CIF (UV):    1,220,407.60
+(All of the above are in JPY)
+============================================================
+CID:                          1,145,981.04
+XID:                          1,992,000.00
+SSCL TAX (2.5%):              148,481.70
+VAT (18%):                    1,069,068.25
+VEL:                          15,000.00
+LXT:                          0.00
+Total Tax:                    4,370,530.99
+Vehicle Value:                2,845,022.64
+Bank, Port & Clearing:        116,750.00
+Landing Cost:                 7,332,303.63
+Service Charges:              200,000.00
+Total Vehicle Cost:           7,532,303.63
+============================================================
+Note: Luxury Tax (LXT) is included in Total Tax above.

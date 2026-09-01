@@ -318,9 +318,6 @@
   <div class="panel">
     <div class="panel-label">01 — Add Photos</div>
 
-    <button class="ghost" id="folderBtn" style="width:100%;padding:14px;font-size:13px;margin-bottom:10px;display:none;">
-      📁 Open Vehicle Folder (loads photos + auto-saves collage here)
-    </button>
     <div id="folderActive" style="display:none;" class="hint">
       Using folder: <b id="folderName"></b> — the collage will save straight back into this folder.
       <span id="folderClear" style="text-decoration:underline;cursor:pointer;color:var(--amber);margin-left:6px;">Change folder</span>
@@ -402,16 +399,10 @@ const countTag = document.getElementById('countTag');
 const shapeSelect = document.getElementById('shapeSelect');
 const gapSelect = document.getElementById('gapSelect');
 const colorSelect = document.getElementById('colorSelect');
-const folderBtn = document.getElementById('folderBtn');
 const folderActive = document.getElementById('folderActive');
 const folderName = document.getElementById('folderName');
 const folderClear = document.getElementById('folderClear');
 const saveHint = document.getElementById('saveHint');
-
-const FS_ACCESS_SUPPORTED = ('showDirectoryPicker' in window);
-if(FS_ACCESS_SUPPORTED){
-  folderBtn.style.display = 'block';
-}
 
 if(location.protocol === 'file:'){
   const warn = document.getElementById('fileProtocolWarning');
@@ -448,41 +439,6 @@ async function filesFromDirectoryEntry(dirEntry){
   }
   return files;
 }
-
-async function loadFolderHandle(handle){
-  state.dirHandle = handle;
-  clearAllImages();
-  state.lastCount = 0;
-  thumbsEl.innerHTML = '';
-  layoutRow.innerHTML = '';
-
-  const entries = [];
-  for await (const [name, entry] of handle.entries()){
-    if(entry.kind === 'file' && IMG_EXT.test(name)) entries.push({name, entry});
-  }
-  entries.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}));
-
-  for(const {entry} of entries){
-    const file = await entry.getFile();
-    await loadImageFile(file);
-  }
-
-  folderName.textContent = handle.name;
-  folderActive.style.display = 'block';
-  saveHint.innerHTML = 'This will save the collage as <b>collage.jpg</b> directly inside <b>' + handle.name + '</b> — no manual moving needed.';
-}
-
-folderBtn.addEventListener('click', async () => {
-  try{
-    const handle = await window.showDirectoryPicker();
-    await loadFolderHandle(handle);
-  } catch(err){
-    if(err.name !== 'AbortError'){
-      console.error(err);
-      alert('Could not open that folder: ' + err.message);
-    }
-  }
-});
 
 folderClear.addEventListener('click', () => {
   state.dirHandle = null;
