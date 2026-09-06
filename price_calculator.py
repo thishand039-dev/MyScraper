@@ -230,14 +230,16 @@ def calculate(vehicle_model: str, price: float) -> dict:
     inputs = _load_json(INPUT_VALUES_FILE)
     details_config = _load_json(VEHICLE_DETAILS_CONFIG_FILE)
 
-    if vehicle_model not in details_config:
+    lookup_key = vehicle_model.strip().lower()
+    matched_key = next((k for k in details_config if k.strip().lower() == lookup_key), None)
+    if matched_key is None:
         raise _stopped_with(
             partial,
             f"Vehicle model '{vehicle_model}' not found in "
-            f"vehicleDetails.json. Check the exact dropdown spelling, or "
-            f"add this model to the config. Calculation stopped."
+            f"vehicleDetails.json (case-insensitive match attempted). Check "
+            f"spelling, or add this model to the config. Calculation stopped."
         )
-    cfg = details_config[vehicle_model]
+    cfg = details_config[matched_key]
 
     unit_price = float(price or 0)
     auction_house_fee = 0.0  # defaulted to 0 until a per-auction-house

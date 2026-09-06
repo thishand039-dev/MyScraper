@@ -17,6 +17,18 @@
     "engineCc": 660,
     "m3Value": 8.26
   },
+  "SUZUKI EVERY PA PETROL": {
+    "webValue": 1478000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
+  },
+  "SUZUKI EVERY PC PETROL": {
+    "webValue": 1639000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
+  },
   "DAIHATSU MIRA L Petrol": {
     "webValue": 1025200,
     "fuelType": "petrol",
