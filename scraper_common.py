@@ -338,6 +338,15 @@ def safe_folder_name(vehicle_code: str, vehicle_model: str) -> str:
     return "".join(c for c in raw if c not in '<>:"/\\|?*').strip()
 
 
+def _date_only(auction_date: str) -> str:
+    """Auction dates sometimes include a time component (e.g.
+    '2026-08-31 11:39'). Only the date is shown in description.txt -
+    this strips any trailing time, falling back to the original string
+    unchanged if it doesn't start with a YYYY-MM-DD pattern."""
+    match = re.match(r"(\d{4}-\d{2}-\d{2})", (auction_date or "").strip())
+    return match.group(1) if match else (auction_date or "")
+
+
 def write_description_file(folder: Path, info: dict):
     """Writes description.txt from a vehicle_info-shaped dict. Used by
     BOTH download_and_price.py (right after scraping) and
@@ -355,25 +364,35 @@ def write_description_file(folder: Path, info: dict):
     vehicle's spec fields - no price line, no Currency Rate line, no
     all-inclusive note, no WhatsApp link, per instructions."""
     sold = bool(info.get("sold")) and info.get("price") not in (None, "", "None")
+    auction_date = _date_only(info.get("auction_date", ""))
 
     if sold:
+        sinhala_note = (
+            f"මෙය {auction_date} දින ජපාන වෙන්දේසියේදී අලෙවි වූ මෝටර් රථයකි.\n"
+            f"මෙහි දැක්වෙන්නේ මෙම වාහනය ලංකාවට ආනයනය කිරීම සඳහා අවශ්‍ය වන සම්පූර්ණ පිරිවැයයි.\n"
+            f"මෙමගින් හෙට දිනයේ වෙන්දේසියේදී අලෙවි වීමට නියමිත වාහනවල මිල "
+            f"ගණන් පිළිබඳව ඔබට නිවැරදි අවබෝධයක් ලබාගත හැකි වේ.\nඅද දින අලෙවි වූ "
+            f"වාහනවල සත්‍ය මිල ගණන් මෙන්ම, හෙට දින ජපාන වෙන්දේසියට එක්වන වාහනවල "
+            f"විස්තර දැනගැනීම සඳහා අපගේ WhatsApp සමූහයට එක්වන්න."
+        )
         description = (
-            f"{info['vehicle_model']} {info.get('year', '')} | *{info['price']}*\n\n"
-            f"Auction Date: {info.get('auction_date', '')}\n"
-            f"Color: {info.get('color', '')}\n"
-            f"Mileage: {info.get('mileage', '')}\n"
-            f"Auction Grade: {info.get('auction_grade', '')}\n"
-            f"Currency Rate: {CURRENCY_RATE_LKR} LKR (Local customs rate)\n"
-            f"All-inclusive take home price\n\n"
-            f"Follow this link to join our WhatsApp group: {WHATSAPP_GROUP_LINK}\n"
+            f"🚗 {info['vehicle_model']} {info.get('year', '')} | *{info['price']}*\n\n"
+            f"📅 Auction Date: {auction_date}\n"
+            f"🎨 Color: {info.get('color', '')}\n"
+            f"🛣️ Mileage: {info.get('mileage', '')}\n"
+            f"⭐ Auction Grade: {info.get('auction_grade', '')}\n"
+            f"💱 Currency Rate: {CURRENCY_RATE_LKR} LKR (Local customs rate)\n"
+            f"✅ All-inclusive take home price\n\n"
+            f"{sinhala_note}\n\n"
+            f"📲 Follow this link to join our WhatsApp group: {WHATSAPP_GROUP_LINK}\n"
         )
     else:
         description = (
-            f"{info['vehicle_model']} {info.get('year', '')}\n\n"
-            f"Auction Date: {info.get('auction_date', '')}\n"
-            f"Color: {info.get('color', '')}\n"
-            f"Mileage: {info.get('mileage', '')}\n"
-            f"Auction Grade: {info.get('auction_grade', '')}\n"
+            f"🚗 {info['vehicle_model']} {info.get('year', '')}\n\n"
+            f"📅 Auction Date: {auction_date}\n"
+            f"🎨 Color: {info.get('color', '')}\n"
+            f"🛣️ Mileage: {info.get('mileage', '')}\n"
+            f"⭐ Auction Grade: {info.get('auction_grade', '')}\n"
         )
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "description.txt").write_text(description, encoding="utf-8")
