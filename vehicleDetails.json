@@ -370,6 +370,30 @@
     "fuelType": "Petrol",
     "engineCc": 660,
     "m3Value": 8.162
+  },
+   "SUZUKI EVERY PA PETROL": {
+    "webValue": 1478000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
+  },
+  "SUZUKI EVERY PC PETROL": {
+    "webValue": 1639000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
+  },
+    "SUZUKI EVERY JOIN PETROL": {
+    "webValue": 1698000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
+  },
+    "SUZUKI EVERY JOIN TURBO PETROL": {
+    "webValue": 1819000, 
+    "fuelType": "petrol",
+    "engineCc": 660,
+    "m3Value": 9.489
   }
 
 }

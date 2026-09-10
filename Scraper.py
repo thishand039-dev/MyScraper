@@ -90,7 +90,7 @@ BASE_URL = "https://www.autofromauction.com"
 LOGIN_URL = f"{BASE_URL}/"
 HOME_URL = f"{BASE_URL}/home"
 
-INPUT_EXCEL = "input_vehicles_autofromauction.xlsx"
+INPUT_EXCEL = "input_vehicles.xlsx"
 OUTPUT_DIR = Path("downloads")
 STORAGE_STATE_FILE = "auth_state_autofromauction.json"
 
